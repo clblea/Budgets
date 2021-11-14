@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <h1>Budget List</h1>
+    <div class="content">
+        <form id="add-budget-form">
+            <input type="text" name="BudgetDesc" placeholder="Budget Description">
+            <input type="text" name="Category" placeholder="Category Description">
+            <button>Add Budget</button>
+        </form>
+        <ul id="budget-list"></ul>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.4.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, doc, deleteDoc, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/9.4.1/firebase-firestore.js";
+    // import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.4.1/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyAwRDNZzbqQd97w_s3ffJIoNBx-Imz9K7E",
+            authDomain: "budgetplan-3b5d6.firebaseapp.com",
+            projectId: "budgetplan-3b5d6",
+            storageBucket: "budgetplan-3b5d6.appspot.com",
+            messagingSenderId: "418392547357",
+            appId: "1:418392547357:web:7e7cca7bfbec31574426f4",
+            measurementId: "G-121S6VXKV6"
+        };
+  
+    // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+    // const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+    // Get a list of cities from your database
+        async function getBudgets(db) {
+            const budgetCol = collection(db, "Budgets");
+            const budgetSnapshot = await getDocs(budgetCol);
+            const budgetList = budgetSnapshot.docs.map((doc) => doc.data());
+            return budgetList;
+        }
+
+    const budgetList = document.querySelector("#budget-list");
+    const form = document.querySelector("#add-budget-form")
+
+    function renderBudget(dc){
+        let li = document.createElement("li");
+        let BudgetDesc= document.createElement("span");
+        let Category = document.createElement("span");
+        let cross = document.createElement('div');
+
+        li.setAttribute("data-id",dc.id);
+        BudgetDesc.textContent = dc.data().BudgetDesc;
+        Category.textContent = dc.data().Category;
+        cross.textContent = "x";
+
+        li.appendChild(BudgetDesc);
+        li.appendChild(Category);
+        li.appendChile(cross);
+
+        budgetList.appendChild(li);
+
+        cross.addEventListener("click", (e) => {
+            e.stopPropagation();
+            let id = e.target.parentElement.getAttribute("data-id");
+            
+            deleteDoc(doc(db,"Budgets", id))
+        })
+    }
+
+    const budgets = getDocs(collection(db, "Budgets")).then((snapshot) => {
+        snapshot.forEach((dc) => {
+            // console.log(doc)
+            renderBudget(dc)
+        })
+    })
+
+    const q = query(collection(db, "Budgets"), where("BudgetDescription", "==", "Electric"));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+        console.log(doc.id, "=>", doc.data())
+    })
+
+    const upDoc = doc(db, "Budgets", "VEo84Jjt0P9GgTv7YtAU");
+
+    updateDoc(upDoc, {
+        name: "Evergy"
+    })
+
+    form.addEventListener(("submit"), (e) => {
+        e.preventDefault();
+        const docRef = addDoc(collection(db, "Budgets"), {
+            BudgetDesc: form.BudgetDesc.value,
+            Category: form.Category.value
+        })
+    })
+
+        // getBudgets(db);
+        // console.log(getBudgets(db))
+
+    </script>
+    <script src="app.js"></script>   
+</body>
+
+</html>
